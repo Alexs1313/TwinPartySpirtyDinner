@@ -1,20 +1,17 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import TwinPartySpirtyDinnerTab from './TwinPartySpirtyDinnerTab';
-import TwinPartySpirtyDinnerOnboard from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerOnboard';
-import TwinPartySpirtyDinnerLoader from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerLoader';
-import TwinPartySpirtyDinnerAddPlayers from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerAddPlayers';
-import TwinPartySpirtyDinnerAddTask from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerAddTask';
-import TwinPartySpirtyDinnerMoments from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerMoments';
+import TwinPartySpirtyDinnerOnboard from '../[screens]/TwinPartySpirtyDinnerOnboard';
+import TwinPartySpirtyDinnerAddPlayers from '../[screens]/TwinPartySpirtyDinnerAddPlayers';
+import TwinPartySpirtyDinnerAddTask from '../[screens]/TwinPartySpirtyDinnerAddTask';
+import TwinPartySpirtyDinnerMoments from '../[screens]/TwinPartySpirtyDinnerMoments';
+import Loader from '../[components]/Loader';
 
 const Stack = createStackNavigator();
 
 const TwinPartySpirtyDinnerStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="TwinPartySpirtyDinnerLoader"
-        component={TwinPartySpirtyDinnerLoader}
-      />
+      <Stack.Screen name="Loader" component={Loader} />
       <Stack.Screen
         name="TwinPartySpirtyDinnerOnboard"
         component={TwinPartySpirtyDinnerOnboard}

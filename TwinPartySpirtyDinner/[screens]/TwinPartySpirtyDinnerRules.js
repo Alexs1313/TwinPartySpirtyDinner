@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
+import Background from '../[components]/Background';
 
 const TwinPartySpirtyDinnerRules = () => {
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <ScrollView
         contentContainerStyle={sty.ruleContainer}
         showsVerticalScrollIndicator={false}
@@ -87,7 +87,7 @@ const TwinPartySpirtyDinnerRules = () => {
 
         <View style={sty.bottomPad} />
       </ScrollView>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 

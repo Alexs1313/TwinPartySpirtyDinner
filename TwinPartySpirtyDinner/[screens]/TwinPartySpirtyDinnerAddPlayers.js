@@ -7,10 +7,10 @@ import {
   TextInput,
   Image,
 } from 'react-native';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 import WebView from 'react-native-webview';
-import { twinPartySpirtyDinnerLoaderHTML } from '../TwinPartySpirtyDinnerConsts/twinPartySpirtyDinnerLoaderHTML';
+import { twinPartySpirtyDinnerLoaderHTML } from '../[constants]/twinPartySpirtyDinnerLoaderHTML';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Background from '../[components]/Background';
 
 const QUESTIONS_PARTY = [
   'Who sets the pace of the evening today?',
@@ -58,7 +58,7 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
   const mode = route?.params?.mode || 'PARTY';
   const isPartyMode = mode === 'PARTY';
 
-  // стейти ------------------>
+  // states ------------------>
 
   const [screen, setScreen] = useState(SCREEN_ADD);
   const [roster, setRoster] = useState([]);
@@ -67,13 +67,13 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
   const [phase, setPhase] = useState(CATEGORY_QUESTION);
   const [secondsLeft, setSecondsLeft] = useState(STEP_DEFAULT_SECONDS);
 
-  // рефи ------------------>
+  // refs ------------------>
 
   const nameInputRef = useRef(null);
   const sessionTickerRef = useRef(null);
   const roundTickerRef = useRef(null);
 
-  // ефекти ------------------>
+  // effects ------------------>
 
   useEffect(() => {
     let alive = true;
@@ -132,8 +132,6 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
       },
     );
   }, [roster]);
-
-  // функціЇ ------------------>
 
   const addParticipant = () => {
     const name = (pendingName || '').trim();
@@ -262,11 +260,9 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
       ? currentPool[cursor % currentPool.length]
       : '';
 
-  // ----------------- Рендер ------------------>
-
   if (screen === SCREEN_ADD) {
     return (
-      <TwinPartySpirtyDinnerBackground>
+      <Background>
         <View style={styles.shell}>
           <View style={styles.masthead}>
             <TouchableOpacity
@@ -344,13 +340,13 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
             </View>
           )}
         </View>
-      </TwinPartySpirtyDinnerBackground>
+      </Background>
     );
   }
 
   if (screen === SCREEN_LOADER) {
     return (
-      <TwinPartySpirtyDinnerBackground>
+      <Background>
         <View style={styles.spinWrap}>
           <WebView
             originWhitelist={['*']}
@@ -359,12 +355,12 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
             scrollEnabled={false}
           />
         </View>
-      </TwinPartySpirtyDinnerBackground>
+      </Background>
     );
   }
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={styles.shell}>
         <View style={styles.metaBox}>
           <Text style={styles.metaLabel}>Category:</Text>
@@ -413,13 +409,11 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
           <Text style={styles.exitText}>HOME</Text>
         </TouchableOpacity>
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 
 export default TwinPartySpirtyDinnerLineup;
-
-// ----------------- Стилі ------------------>
 
 const styles = StyleSheet.create({
   shell: {

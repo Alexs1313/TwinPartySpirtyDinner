@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
-import TwinPartySpirtyDinnerStack from './TwinPartySpirtyDinner/TwinPartySpirtyDinnerNavigation/TwinPartySpirtyDinnerStack';
-import { ContextProvider } from './TwinPartySpirtyDinner/TwinPartySpirtyDinnerStore/twinPartySpirtyDinnerContext';
+import TwinPartySpirtyDinnerStack from './TwinPartySpirtyDinner/[navigation]/TwinPartySpirtyDinnerStack';
+import { ContextProvider } from './TwinPartySpirtyDinner/[store]/twinPartySpirtyDinnerContext';
 
 const App = () => {
   return (

@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
-import TwinPartySpirtyDinnerBackground from './TwinPartySpirtyDinnerBackground';
-import { twinPartySpirtyDinnerLoaderHTML } from '../TwinPartySpirtyDinnerConsts/twinPartySpirtyDinnerLoaderHTML';
+import TwinPartySpirtyDinnerBackground from './Background';
+import { twinPartySpirtyDinnerLoaderHTML } from '../[constants]/twinPartySpirtyDinnerLoaderHTML';
 
-const TwinPartySpirtyDinnerLoader = () => {
+const Loader = () => {
   const nav = useNavigation();
   const timerRef = useRef(null);
 
@@ -61,4 +61,4 @@ const sty = StyleSheet.create({
   },
 });
 
-export default TwinPartySpirtyDinnerLoader;
+export default Loader;

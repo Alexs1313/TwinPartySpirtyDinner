@@ -9,10 +9,10 @@ import {
   Share,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useStore } from '../TwinPartySpirtyDinnerStore/twinPartySpirtyDinnerContext';
+import { useStore } from '../[store]/twinPartySpirtyDinnerContext';
+import Background from '../[components]/Background';
 
 const TwinPartySpirtyDinnerMoments = () => {
   const {
@@ -84,7 +84,7 @@ const TwinPartySpirtyDinnerMoments = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
+  const savedCard = ({ item }) => (
     <View style={sty.card}>
       <Image source={{ uri: item.photo }} style={sty.photo} />
 
@@ -117,7 +117,7 @@ const TwinPartySpirtyDinnerMoments = () => {
   );
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={sty.container}>
         <Text style={sty.title}>PARTY MOMENTS</Text>
 
@@ -131,12 +131,12 @@ const TwinPartySpirtyDinnerMoments = () => {
             data={scrapbook}
             scrollEnabled={false}
             keyExtractor={item => item.id}
-            renderItem={renderItem}
+            renderItem={savedCard}
             contentContainerStyle={{ paddingBottom: 120 }}
           />
         )}
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 

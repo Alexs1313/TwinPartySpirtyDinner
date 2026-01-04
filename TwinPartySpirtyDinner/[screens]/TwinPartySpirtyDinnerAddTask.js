@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
+import Background from '../[components]/Background';
 
 const TwinPartySpirtyDinnerAddTask = () => {
   const nav = useNavigation();
@@ -84,7 +84,7 @@ const TwinPartySpirtyDinnerAddTask = () => {
   };
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={sty.shell}>
         <View style={sty.headerRow}>
           <TouchableOpacity onPress={() => nav.goBack()}>
@@ -133,7 +133,7 @@ const TwinPartySpirtyDinnerAddTask = () => {
           <Text style={sty.saveLabel}>SAVE</Text>
         </TouchableOpacity>
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 

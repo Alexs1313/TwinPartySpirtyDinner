@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-const TwinPartySpirtyDinnerButton = ({ onPress = () => {}, propText = '' }) => {
+const CustomButton = ({ onPress = () => {}, propText = '' }) => {
   const handlePress = () => {
     try {
       console.log('pressed btn ->', propText);
@@ -40,4 +40,4 @@ const sty = StyleSheet.create({
   },
 });
 
-export default TwinPartySpirtyDinnerButton;
+export default CustomButton;

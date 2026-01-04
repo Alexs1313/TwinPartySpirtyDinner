@@ -8,12 +8,12 @@ import {
   Share,
   Linking,
 } from 'react-native';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
+import Background from '../[components]/Background';
 
 const TwinPartySpirtyDinnerInfo = () => {
   const shareTheVibe = async () => {
     try {
-      console.log('[Info] share triggered');
+      console.log('share trigg');
       await Share.share({
         message:
           'Twin Party is an offline party app for friends. Put your phone on the table and start the evening.',
@@ -41,7 +41,7 @@ const TwinPartySpirtyDinnerInfo = () => {
   };
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={sty.shell}>
         <Text style={sty.heading}>INFORMATION</Text>
 
@@ -87,7 +87,7 @@ const TwinPartySpirtyDinnerInfo = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 

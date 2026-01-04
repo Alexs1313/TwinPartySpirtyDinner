@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 import { useNavigation } from '@react-navigation/native';
-import TwinPartySpirtyDinnerButton from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from '../[components]/CustomButton';
+import Background from '../[components]/Background';
 
 const SLIDE_IMAGES = [
   require('../../assets/twinPartySpirtyDinnerImages/twinPartyOnb1.png'),
@@ -64,7 +64,7 @@ const TwinPartySpirtyDinnerOnboard = () => {
   const primaryLabel = LABELS[slate] || 'OK';
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={s.shell}>
         <TouchableOpacity
           activeOpacity={0.9}
@@ -78,12 +78,9 @@ const TwinPartySpirtyDinnerOnboard = () => {
           {SLIDE_TEXTS[slate]}
         </Text>
 
-        <TwinPartySpirtyDinnerButton
-          onPress={onPressPrimary}
-          propText={primaryLabel}
-        />
+        <CustomButton onPress={onPressPrimary} propText={primaryLabel} />
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 

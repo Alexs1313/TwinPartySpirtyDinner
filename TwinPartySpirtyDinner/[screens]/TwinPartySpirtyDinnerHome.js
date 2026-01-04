@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
-import { PARTY_MOMENT_PHOTO_CHALLENGE } from '../TwinPartySpirtyDinnerData/twinPartySpirtyPhotoChalllenge';
+import { PARTY_MOMENT_PHOTO_CHALLENGE } from '../[data]/twinPartySpirtyPhotoChalllenge';
 import { useFocusEffect } from '@react-navigation/native';
+import Background from '../[components]/Background';
 
 const TwinPartySpirtyDinnerHome = ({ navigation }) => {
-  // стейтс і рефи
+  // states refs
 
   const [tickCount, setTickCount] = useState(0);
   const [chosenMode, setChosenMode] = useState('');
@@ -16,7 +16,7 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
   const [accumSeconds, setAccumSeconds] = useState(0);
   const [upcomingTask, setUpcomingTask] = useState(null);
 
-  // ефекти
+  // effects
 
   useFocusEffect(
     useCallback(() => {
@@ -122,7 +122,7 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
   };
 
   return (
-    <TwinPartySpirtyDinnerBackground>
+    <Background>
       <View style={ui.deck}>
         <View style={ui.mast}>
           <View style={ui.copyWrap}>
@@ -201,11 +201,10 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
           <Text style={ui.bigStartText}>START</Text>
         </TouchableOpacity>
       </View>
-    </TwinPartySpirtyDinnerBackground>
+    </Background>
   );
 };
 
-// стилі
 const ui = StyleSheet.create({
   deck: {
     flex: 1,

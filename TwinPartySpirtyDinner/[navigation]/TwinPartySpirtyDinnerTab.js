@@ -2,10 +2,10 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import TwinPartySpirtyDinnerHome from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerHome';
-import TwinPartySpirtyDinnerRules from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerRules';
-import TwinPartySpirtyDinnerInfo from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerInfo';
-import TwinPartySpirtyDinnerMoments from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerMoments';
+import TwinPartySpirtyDinnerHome from '../[screens]/TwinPartySpirtyDinnerHome';
+import TwinPartySpirtyDinnerRules from '../[screens]/TwinPartySpirtyDinnerRules';
+import TwinPartySpirtyDinnerInfo from '../[screens]/TwinPartySpirtyDinnerInfo';
+import TwinPartySpirtyDinnerMoments from '../[screens]/TwinPartySpirtyDinnerMoments';
 
 const Tabs = createBottomTabNavigator();
 
