@@ -11,31 +11,49 @@ import {
 import TwinPartySpirtyDinnerBackground from '../TwinPartySpirtyDinnerComponents/TwinPartySpirtyDinnerBackground';
 
 const TwinPartySpirtyDinnerInfo = () => {
-  const handleShareTwinPartySpirtyDinner = () => {
-    Share.share({
-      message:
-        'Twin Party is an offline party app for friends. Put your phone on the table and start the evening.',
-    });
+  const shareTheVibe = async () => {
+    try {
+      console.log('[Info] share triggered');
+      await Share.share({
+        message:
+          'Twin Party is an offline party app for friends. Put your phone on the table and start the evening.',
+      });
+      console.log('completed!!');
+    } catch (err) {
+      console.warn('share errr=>', err);
+    }
   };
 
-  const handleRateTwinPartySpirtyDinner = () => {
-    Linking.openURL(
-      'https://apps.apple.com/us/app/twin-party-spirty-dinner/id6756870400',
-    );
+  const openStorePage = async () => {
+    const url =
+      'https://apps.apple.com/us/app/twin-party-spirty-dinner/id6756870400';
+    try {
+      console.log('opening store url', url);
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        console.warn('cannot open url', url);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (err) {
+      console.error('rate failed', err);
+    }
   };
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.containerTwinPartySpirtyDinner}>
-        <Text style={styles.titleTwinPartySpirtyDinner}>INFORMATION</Text>
+      <View style={sty.shell}>
+        <Text style={sty.heading}>INFORMATION</Text>
 
         <Image
           source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyLogo.png')}
-          style={styles.iconTwinPartySpirtyDinner}
+          style={sty.logoImg}
+          accessible
+          accessibilityLabel="Twin Party Logo"
         />
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTextTwinPartySpirtyDinner}>
+        <View style={sty.infoCard}>
+          <Text style={sty.bodyText}>
             Twin Party is an offline app for a group of friends where your phone
             becomes the host of the evening.
             {'\n\n'}
@@ -49,21 +67,23 @@ const TwinPartySpirtyDinnerInfo = () => {
           </Text>
         </View>
 
-        <View style={styles.buttonsRowTwinPartySpirtyDinner}>
+        <View style={sty.actionsRow}>
           <TouchableOpacity
             activeOpacity={0.8}
-            style={styles.buttonTwinPartySpirtyDinner}
-            onPress={handleShareTwinPartySpirtyDinner}
+            style={[sty.actionBtn, sty.actionBtnLeft]}
+            onPress={shareTheVibe}
+            accessibilityLabel="Share Twin Party"
           >
-            <Text style={styles.buttonTextTwinPartySpirtyDinner}>SHARE</Text>
+            <Text style={sty.actionText}>SHARE</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.8}
-            style={styles.buttonTwinPartySpirtyDinner}
-            onPress={handleRateTwinPartySpirtyDinner}
+            style={sty.actionBtn}
+            onPress={openStorePage}
+            accessibilityLabel="Rate Twin Party"
           >
-            <Text style={styles.buttonTextTwinPartySpirtyDinner}>RATE APP</Text>
+            <Text style={sty.actionText}>RATE APP</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -71,41 +91,41 @@ const TwinPartySpirtyDinnerInfo = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+const sty = StyleSheet.create({
+  shell: {
     flex: 1,
     alignItems: 'center',
     paddingTop: 85,
     paddingBottom: 135,
   },
-  titleTwinPartySpirtyDinner: {
+  heading: {
     fontSize: 20,
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 1,
     marginBottom: 30,
   },
-  iconTwinPartySpirtyDinner: {
+  logoImg: {
     marginBottom: 13,
   },
-  cardTwinPartySpirtyDinner: {
+  infoCard: {
     width: '86%',
     backgroundColor: '#23113C',
     borderRadius: 24,
     padding: 22,
     marginBottom: 30,
   },
-  cardTextTwinPartySpirtyDinner: {
+  bodyText: {
     fontSize: 12,
     lineHeight: 20,
     color: '#FFFFFF',
     fontWeight: '600',
   },
-  buttonsRowTwinPartySpirtyDinner: {
+  actionsRow: {
     flexDirection: 'row',
-    gap: 20,
+    alignItems: 'center',
   },
-  buttonTwinPartySpirtyDinner: {
+  actionBtn: {
     width: 143,
     height: 79,
     backgroundColor: '#31FFCF',
@@ -113,7 +133,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonTextTwinPartySpirtyDinner: {
+  actionBtnLeft: {
+    marginRight: 20,
+  },
+  actionText: {
     fontSize: 24,
     fontWeight: '700',
     color: '#000',

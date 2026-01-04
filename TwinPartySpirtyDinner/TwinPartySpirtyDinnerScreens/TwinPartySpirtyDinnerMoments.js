@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,51 +16,85 @@ import { useStore } from '../TwinPartySpirtyDinnerStore/twinPartySpirtyDinnerCon
 
 const TwinPartySpirtyDinnerMoments = () => {
   const {
-    momentsTwinPartySpirtyDinner,
-    setMomentsTwinPartySpirtyDinner,
-    loadMomentsTwinPartySpirtyDinner,
+    momentsTwinPartySpirtyDinner: scrapbook,
+    setMomentsTwinPartySpirtyDinner: setScrapbook,
+    loadMomentsTwinPartySpirtyDinner: loadScrapbook,
   } = useStore();
 
   useFocusEffect(
     useCallback(() => {
-      loadMomentsTwinPartySpirtyDinner();
-    }, []),
+      try {
+        loadScrapbook();
+        console.log('ok !');
+      } catch (e) {
+        console.warn('failed', e);
+      }
+    }, [loadScrapbook]),
   );
 
-  const deleteMomentTwinPartySpirtyDinner = async idTwinPartySpirtyDinner => {
-    const updatedTwinPartySpirtyDinner = momentsTwinPartySpirtyDinner.filter(
-      moment => moment.id !== idTwinPartySpirtyDinner,
-    );
-    setMomentsTwinPartySpirtyDinner(updatedTwinPartySpirtyDinner);
-    await AsyncStorage.setItem(
-      'twin_party_moments',
-      JSON.stringify(updatedTwinPartySpirtyDinner),
-    );
+  const deleteMoment = async id => {
+    try {
+      const nextLocal = scrapbook.filter(moment => moment.id !== id);
+      setScrapbook(nextLocal);
+
+      console.log('deleted!', id);
+
+      const savedMoments = await AsyncStorage.getItem('twin_party_moments');
+      let persisted = [];
+
+      if (savedMoments) {
+        try {
+          const parsedJSON = JSON.parse(savedMoments);
+          if (Array.isArray(parsedJSON)) persisted = parsedJSON;
+        } catch (e) {
+          console.warn('[Moments] parse persisted moments failed', e);
+          persisted = [];
+        }
+      }
+
+      const nextPersist = persisted.filter(moment => moment.id !== id);
+
+      await AsyncStorage.setItem(
+        'twin_party_moments',
+        JSON.stringify(nextPersist),
+      );
+      console.log('deleted from storage!!', id);
+    } catch (e) {
+      console.error('deleteMoment failed', e);
+    }
   };
 
-  const shareMomentTwinPartySpirtyDinner = async itemTwinPartySpirtyDinner => {
-    Share.share({
-      message: `${itemTwinPartySpirtyDinner.task}`,
-      url: itemTwinPartySpirtyDinner.photo,
-    });
+  const shareMoment = async item => {
+    try {
+      const message = item?.task || 'Twin Party moment';
+      const url = item?.photo;
+
+      console.log('sharing ok', item?.id);
+
+      await Share.share(
+        {
+          message,
+          url,
+        },
+        {},
+      );
+      console.log('[Moments] share finished', item?.id);
+    } catch (e) {
+      console.warn('[Moments] share failed', e);
+    }
   };
 
-  const renderItemTwinPartySpirtyDinner = ({ item }) => (
-    <View style={styles.cardTwinPartySpirtyDinner}>
-      <Image
-        source={{ uri: item.photo }}
-        style={styles.imageTwinPartySpirtyDinner}
-      />
+  const renderItem = ({ item }) => (
+    <View style={sty.card}>
+      <Image source={{ uri: item.photo }} style={sty.photo} />
 
-      <Text style={styles.dateTwinPartySpirtyDinner}>{item.date}</Text>
+      <Text style={sty.date}>{item.date}</Text>
 
-      <View style={styles.actionsTwinPartySpirtyDinner}>
+      <View style={sty.controls}>
         <TouchableOpacity
-          style={[
-            styles.actionBtnTwinPartySpirtyDinner,
-            styles.deleteTwinPartySpirtyDinner,
-          ]}
-          onPress={() => deleteMomentTwinPartySpirtyDinner(item.id)}
+          style={[sty.controlBtn, sty.deleteBtn]}
+          onPress={() => deleteMoment(item.id)}
+          accessibilityLabel="Delete moment"
         >
           <Image
             source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyDell.png')}
@@ -68,11 +102,9 @@ const TwinPartySpirtyDinnerMoments = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.actionBtnTwinPartySpirtyDinner,
-            styles.shareTwinPartySpirtyDinner,
-          ]}
-          onPress={() => shareMomentTwinPartySpirtyDinner(item)}
+          style={[sty.controlBtn, sty.shareBtn]}
+          onPress={() => shareMoment(item)}
+          accessibilityLabel="Share moment"
         >
           <Image
             source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyShr.png')}
@@ -80,29 +112,26 @@ const TwinPartySpirtyDinnerMoments = () => {
         </TouchableOpacity>
       </View>
 
-      <LinearGradient
-        colors={['#00000000', '#000000']}
-        style={styles.gradientTwinPartySpirtyDinner}
-      />
+      <LinearGradient colors={['#00000000', '#000000']} style={sty.fade} />
     </View>
   );
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.containerTwinPartySpirtyDinner}>
-        <Text style={styles.titleTwinPartySpirtyDinner}>PARTY MOMENTS</Text>
+      <View style={sty.container}>
+        <Text style={sty.title}>PARTY MOMENTS</Text>
 
-        {momentsTwinPartySpirtyDinner.length === 0 ? (
-          <Text style={styles.emptyTextTwinPartySpirtyDinner}>
-            There are no completed tasks, try to play more time and have the
-            opportunity
+        {!scrapbook || scrapbook.length === 0 ? (
+          <Text style={sty.empty}>
+            There are no completed tasks yet — play a little longer to unlock
+            moments and photo challenges.
           </Text>
         ) : (
           <FlatList
-            data={momentsTwinPartySpirtyDinner}
+            data={scrapbook}
             scrollEnabled={false}
             keyExtractor={item => item.id}
-            renderItem={renderItemTwinPartySpirtyDinner}
+            renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 120 }}
           />
         )}
@@ -111,26 +140,26 @@ const TwinPartySpirtyDinnerMoments = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+const sty = StyleSheet.create({
+  container: {
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
   },
-  titleTwinPartySpirtyDinner: {
+  title: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 42,
   },
-  gradientTwinPartySpirtyDinner: {
+  fade: {
     position: 'absolute',
     height: '40%',
     bottom: 0,
     width: '100%',
   },
-  emptyTextTwinPartySpirtyDinner: {
+  empty: {
     color: '#fff',
     fontSize: 17,
     textAlign: 'center',
@@ -138,18 +167,18 @@ const styles = StyleSheet.create({
     marginTop: 120,
     paddingHorizontal: 40,
   },
-  cardTwinPartySpirtyDinner: {
+  card: {
     borderRadius: 23,
     overflow: 'hidden',
     marginBottom: 30,
     borderWidth: 1,
     borderColor: '#31FFCF',
   },
-  imageTwinPartySpirtyDinner: {
+  photo: {
     width: '100%',
     height: 180,
   },
-  dateTwinPartySpirtyDinner: {
+  date: {
     position: 'absolute',
     bottom: 10,
     left: 12,
@@ -158,25 +187,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     zIndex: 2,
   },
-  actionsTwinPartySpirtyDinner: {
+  controls: {
     position: 'absolute',
     bottom: 10,
     right: 12,
     flexDirection: 'row',
-    gap: 10,
     zIndex: 2,
   },
-  actionBtnTwinPartySpirtyDinner: {
+  controlBtn: {
     width: 61,
     height: 61,
     borderRadius: 23,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteTwinPartySpirtyDinner: {
+  deleteBtn: {
     backgroundColor: '#FF3131',
+    marginRight: 10,
   },
-  shareTwinPartySpirtyDinner: {
+  shareBtn: {
     backgroundColor: '#31FFCF',
   },
 });

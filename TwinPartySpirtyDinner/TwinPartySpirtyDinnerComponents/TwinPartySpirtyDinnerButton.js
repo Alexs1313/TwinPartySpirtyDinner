@@ -1,19 +1,31 @@
+import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-const TwinPartySpirtyDinnerButton = ({ onPress, propText }) => {
+const TwinPartySpirtyDinnerButton = ({ onPress = () => {}, propText = '' }) => {
+  const handlePress = () => {
+    try {
+      console.log('pressed btn ->', propText);
+      onPress();
+    } catch (err) {
+      console.warn('onPress failed', err);
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      style={styles.twinPartySpirtyBtn}
-      onPress={() => onPress()}
+      style={sty.wrap}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={propText || 'button'}
     >
-      <Text style={styles.twinPartySpirtyBtnText}>{propText}</Text>
+      <Text style={sty.copy}>{propText}</Text>
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
-  twinPartySpirtyBtn: {
+const sty = StyleSheet.create({
+  wrap: {
     width: 191,
     height: 79,
     backgroundColor: '#31FFCF',
@@ -21,9 +33,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  twinPartySpirtyBtnText: {
+  copy: {
     fontSize: 24,
     fontWeight: '600',
+    color: '#000',
   },
 });
 

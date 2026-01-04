@@ -6,16 +6,17 @@ const TwinPartySpirtyDinnerRules = () => {
   return (
     <TwinPartySpirtyDinnerBackground>
       <ScrollView
-        contentContainerStyle={styles.containerTwinPartySpirtyDinner}
+        contentContainerStyle={sty.ruleContainer}
         showsVerticalScrollIndicator={false}
+        accessibilityLabel="Rules scroll"
       >
-        <Text style={styles.titleTwinPartySpirtyDinner}>
+        <Text style={sty.pageTitle} accessibilityRole="header">
           GAME RULES / ROUNDS
         </Text>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>Game rules</Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>Game rules</Text>
+          <Text style={sty.panelBody}>
             Twin Party is an offline game for the company. Your phone is your
             host.
             {'\n\n'}
@@ -24,20 +25,20 @@ const TwinPartySpirtyDinnerRules = () => {
           </Text>
         </View>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>Rounds</Text>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>Rounds</Text>
 
-          <Text style={styles.subTitleTwinPartySpirtyDinner}>QUESTION</Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+          <Text style={sty.sectionTitle}>QUESTION</Text>
+          <Text style={sty.panelBody}>
             • A question appears on the screen{'\n'}• There are no right or
             wrong answers in the game{'\n'}• Answer one by one or all at once
             {'\n'}• The main thing is the conversation, not the result
           </Text>
 
-          <View style={styles.spacerTwinPartySpirtyDinner} />
+          <View style={sty.smallSpacer} />
 
-          <Text style={styles.subTitleTwinPartySpirtyDinner}>ACTION</Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+          <Text style={sty.sectionTitle}>ACTION</Text>
+          <Text style={sty.panelBody}>
             Action appears on the screen{'\n'}
             One player or the entire company performs a task{'\n'}
             Nothing is recorded or filmed{'\n'}
@@ -45,11 +46,9 @@ const TwinPartySpirtyDinnerRules = () => {
           </Text>
         </View>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>
-            How the game goes
-          </Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>How the game goes</Text>
+          <Text style={sty.panelBody}>
             Twin Party is an offline game for the company. Your phone is your
             host.
             {'\n\n'}
@@ -58,29 +57,27 @@ const TwinPartySpirtyDinnerRules = () => {
           </Text>
         </View>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>Party Mode</Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>Party Mode</Text>
+          <Text style={sty.panelBody}>
             QUESTION and ACTION alternate automatically{'\n'}
             Fast pace{'\n'}
             Minimal pauses
           </Text>
         </View>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>Chill Mode</Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>Chill Mode</Text>
+          <Text style={sty.panelBody}>
             Mostly QUESTION{'\n'}
             Slow pace{'\n'}
             More time for conversation
           </Text>
         </View>
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTitleTwinPartySpirtyDinner}>
-            Important to know
-          </Text>
-          <Text style={styles.textTwinPartySpirtyDinner}>
+        <View style={sty.panel}>
+          <Text style={sty.panelTitle}>Important to know</Text>
+          <Text style={sty.panelBody}>
             The game works offline{'\n'}
             No accounts{'\n'}
             No scores or winners{'\n'}
@@ -88,18 +85,18 @@ const TwinPartySpirtyDinnerRules = () => {
           </Text>
         </View>
 
-        <View style={styles.bottomSpacerTwinPartySpirtyDinner} />
+        <View style={sty.bottomPad} />
       </ScrollView>
     </TwinPartySpirtyDinnerBackground>
   );
 };
 
-const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+const sty = StyleSheet.create({
+  ruleContainer: {
     paddingTop: 80,
     paddingHorizontal: 20,
   },
-  titleTwinPartySpirtyDinner: {
+  pageTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#FFFFFF',
@@ -107,34 +104,34 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     letterSpacing: 1,
   },
-  cardTwinPartySpirtyDinner: {
+  panel: {
     backgroundColor: '#23113C',
     borderRadius: 24,
     padding: 22,
     marginBottom: 20,
   },
-  cardTitleTwinPartySpirtyDinner: {
+  panelTitle: {
     fontSize: 16,
     fontWeight: '900',
     color: '#FFFFFF',
     marginBottom: 10,
   },
-  subTitleTwinPartySpirtyDinner: {
+  sectionTitle: {
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 6,
   },
-  textTwinPartySpirtyDinner: {
+  panelBody: {
     fontSize: 12,
     lineHeight: 20,
     color: '#FFFFFF',
     fontWeight: '600',
   },
-  spacerTwinPartySpirtyDinner: {
+  smallSpacer: {
     height: 16,
   },
-  bottomSpacerTwinPartySpirtyDinner: {
+  bottomPad: {
     height: 120,
   },
 });

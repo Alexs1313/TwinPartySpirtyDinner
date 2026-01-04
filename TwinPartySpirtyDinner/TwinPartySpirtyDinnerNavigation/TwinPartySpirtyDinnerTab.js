@@ -1,20 +1,40 @@
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, StyleSheet, Text } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+
 import TwinPartySpirtyDinnerHome from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerHome';
 import TwinPartySpirtyDinnerRules from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerRules';
 import TwinPartySpirtyDinnerInfo from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerInfo';
 import TwinPartySpirtyDinnerMoments from '../TwinPartySpirtyDinnerScreens/TwinPartySpirtyDinnerMoments';
 
-const Tab = createBottomTabNavigator();
+const Tabs = createBottomTabNavigator();
+
+const ICONS = {
+  home: require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab1.png'),
+  rules: require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab2.png'),
+  moments: require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab3.png'),
+  info: require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab4.png'),
+};
 
 const TwinPartySpirtyDinnerTab = () => {
+  const renderTabIcon = (key, color) => {
+    try {
+      const src = ICONS[key];
+      return (
+        <Image source={src} style={[navStyles.icon, { tintColor: color }]} />
+      );
+    } catch (err) {
+      console.warn('icon failed', key, err);
+      return <View style={[navStyles.icon, { backgroundColor: '#333' }]} />;
+    }
+  };
+
   return (
-    <Tab.Navigator
+    <Tabs.Navigator
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: styles.winnetaGolfTabs,
+        tabBarStyle: navStyles.tabBar,
         tabBarActiveTintColor: '#31FFCF',
         tabBarInactiveTintColor: '#fff',
         tabBarItemStyle: {
@@ -23,60 +43,59 @@ const TwinPartySpirtyDinnerTab = () => {
         tabBarLabelPosition: 'below-icon',
       }}
     >
-      <Tab.Screen
+      <Tabs.Screen
         name="TwinPartySpirtyDinnerHome"
         component={TwinPartySpirtyDinnerHome}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab1.png')}
-              style={{ tintColor: color }}
-            />
-          ),
+          tabBarIcon: ({ color }) => renderTabIcon('home', color),
+          tabBarAccessibilityLabel: 'Home tab',
+        }}
+        listeners={{
+          tabPress: () => console.log('Home pressed!'),
         }}
       />
-      <Tab.Screen
+
+      <Tabs.Screen
         name="TwinPartySpirtyDinnerRules"
         component={TwinPartySpirtyDinnerRules}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab2.png')}
-              style={{ tintColor: color }}
-            />
-          ),
+          tabBarIcon: ({ color }) => renderTabIcon('rules', color),
+          tabBarAccessibilityLabel: 'Rules tab',
+        }}
+        listeners={{
+          tabPress: () => console.log('Rules pressed!'),
         }}
       />
-      <Tab.Screen
+
+      <Tabs.Screen
         name="TwinPartySpirtyDinnerMoments"
         component={TwinPartySpirtyDinnerMoments}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab3.png')}
-              style={{ tintColor: color }}
-            />
-          ),
+          tabBarIcon: ({ color }) => renderTabIcon('moments', color),
+          tabBarAccessibilityLabel: 'Moments tab',
+        }}
+        listeners={{
+          tabPress: () => console.log('Moments pressed!'),
         }}
       />
-      <Tab.Screen
+
+      <Tabs.Screen
         name="TwinPartySpirtyDinnerInfo"
         component={TwinPartySpirtyDinnerInfo}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyTab4.png')}
-              style={{ tintColor: color }}
-            />
-          ),
+          tabBarIcon: ({ color }) => renderTabIcon('info', color),
+          tabBarAccessibilityLabel: 'Info tab',
+        }}
+        listeners={{
+          tabPress: () => console.log('Info pressed!'),
         }}
       />
-    </Tab.Navigator>
+    </Tabs.Navigator>
   );
 };
 
-const styles = StyleSheet.create({
-  winnetaGolfTabs: {
+const navStyles = StyleSheet.create({
+  tabBar: {
     marginHorizontal: 30,
     elevation: 0,
     paddingTop: 24,
@@ -90,6 +109,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     backgroundColor: '#23113C',
     height: 90,
+  },
+  icon: {
+    width: 41,
+    height: 41,
+    resizeMode: 'contain',
+  },
+  label: {
+    fontSize: 12,
+    color: '#fff',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

@@ -7,112 +7,132 @@ import { PARTY_MOMENT_PHOTO_CHALLENGE } from '../TwinPartySpirtyDinnerData/twinP
 import { useFocusEffect } from '@react-navigation/native';
 
 const TwinPartySpirtyDinnerHome = ({ navigation }) => {
-  const [secondsTwinPartySpirtyDinner, setSecondsTwinPartySpirtyDinner] =
-    useState(0);
-  const [modeTwinPartySpirtyDinner, setModeTwinPartySpirtyDinner] =
-    useState('');
-  const timerRefTwinPartySpirtyDinner = useRef(null);
-  const [
-    totalSecondsTwinPartySpirtyDinner,
-    setTotalSecondsTwinPartySpirtyDinner,
-  ] = useState(0);
-  const [
-    previewTaskTwinPartySpirtyDinner,
-    setPreviewTaskTwinPartySpirtyDinner,
-  ] = useState(null);
+  // стейтс і рефи
+
+  const [tickCount, setTickCount] = useState(0);
+  const [chosenMode, setChosenMode] = useState('');
+  const clockRef = useRef(null);
+
+  const [accumSeconds, setAccumSeconds] = useState(0);
+  const [upcomingTask, setUpcomingTask] = useState(null);
+
+  // ефекти
 
   useFocusEffect(
     useCallback(() => {
-      loadTaskTwinPartySpirtyDinner();
+      fetchTask();
     }, []),
   );
 
-  const loadTaskTwinPartySpirtyDinner = async () => {
-    const storedTaskTwinPartySpirtyDinner = await AsyncStorage.getItem(
-      'twin_party_current_task',
-    );
+  const fetchTask = async () => {
+    try {
+      const storedTask = await AsyncStorage.getItem('twin_party_current_task');
+      if (storedTask) {
+        setUpcomingTask(storedTask);
+        console.log('loaded stored task =>');
+        return;
+      }
 
-    if (storedTaskTwinPartySpirtyDinner) {
-      setPreviewTaskTwinPartySpirtyDinner(storedTaskTwinPartySpirtyDinner);
-    } else {
-      const randomTwinPartySpirtyDinner =
+      const pickPhoto =
         PARTY_MOMENT_PHOTO_CHALLENGE[
           Math.floor(Math.random() * PARTY_MOMENT_PHOTO_CHALLENGE.length)
         ];
-
-      setPreviewTaskTwinPartySpirtyDinner(randomTwinPartySpirtyDinner);
-      await AsyncStorage.setItem(
-        'twin_party_current_task',
-        randomTwinPartySpirtyDinner,
-      );
+      setUpcomingTask(pickPhoto);
+      try {
+        await AsyncStorage.setItem('twin_party_current_task', pickPhoto);
+      } catch (e) {
+        console.warn('fail', e);
+      }
+      console.log('picked ->', pickPhoto);
+    } catch (e) {
+      console.warn('fetchTask failed', e);
     }
   };
 
   useEffect(() => {
-    if (!previewTaskTwinPartySpirtyDinner) {
-      const randomTwinPartySpirtyDinner =
+    if (!upcomingTask) {
+      const pick =
         PARTY_MOMENT_PHOTO_CHALLENGE[
           Math.floor(Math.random() * PARTY_MOMENT_PHOTO_CHALLENGE.length)
         ];
-      setPreviewTaskTwinPartySpirtyDinner(randomTwinPartySpirtyDinner);
+      setUpcomingTask(pick);
     }
-  }, [previewTaskTwinPartySpirtyDinner]);
+  }, [upcomingTask]);
 
   useEffect(() => {
-    const loadTimeTwinPartySpirtyDinner = async () => {
-      const storedTwinPartySpirtyDinner = await AsyncStorage.getItem(
-        'twin_party_total_time',
-      );
-      setTotalSecondsTwinPartySpirtyDinner(
-        storedTwinPartySpirtyDinner ? Number(storedTwinPartySpirtyDinner) : 0,
-      );
+    const loadTime = async () => {
+      try {
+        const raw = await AsyncStorage.getItem('twin_party_total_time');
+        setAccumSeconds(raw ? Number(raw) : 0);
+      } catch (e) {
+        console.warn('[Home] loadTime failed', e);
+      }
     };
 
-    const focusTwinPartySpirtyDinner = navigation.addListener(
-      'focus',
-      loadTimeTwinPartySpirtyDinner,
-    );
-    return focusTwinPartySpirtyDinner;
+    const unsub = navigation.addListener('focus', loadTime);
+    return unsub;
   }, [navigation]);
 
   useEffect(() => {
-    timerRefTwinPartySpirtyDinner.current = setInterval(() => {
-      setSecondsTwinPartySpirtyDinner(prevState => {
-        if (prevState >= 300) {
-          clearInterval(timerRefTwinPartySpirtyDinner.current);
+    clockRef.current = setInterval(() => {
+      setTickCount(prev => {
+        if (prev >= 300) {
+          clearInterval(clockRef.current);
           return 300;
         }
-        return prevState + 1;
+        return prev + 1;
       });
     }, 1000);
 
-    return () => clearInterval(timerRefTwinPartySpirtyDinner.current);
+    return () => {
+      clearInterval(clockRef.current);
+      clockRef.current = null;
+    };
   }, []);
 
-  const progressTwinPartySpirtyDinner = Math.min(
-    totalSecondsTwinPartySpirtyDinner / 60,
-    1,
-  );
+  const progress = Math.min(accumSeconds / 60, 1);
 
-  const isReadyTwinPartySpirtyDinner = totalSecondsTwinPartySpirtyDinner >= 60;
+  const readyFlag = accumSeconds >= 60;
+
+  const openTaskHandler = async () => {
+    const taskToSend = upcomingTask || PARTY_MOMENT_PHOTO_CHALLENGE[0];
+
+    navigation.navigate('TwinPartySpirtyDinnerAddTask', {
+      task: taskToSend,
+    });
+
+    try {
+      await AsyncStorage.removeItem('twin_party_total_time');
+      setAccumSeconds(0);
+    } catch (e) {
+      console.warn('fail', e);
+    }
+
+    const newPick =
+      PARTY_MOMENT_PHOTO_CHALLENGE[
+        Math.floor(Math.random() * PARTY_MOMENT_PHOTO_CHALLENGE.length)
+      ];
+    try {
+      await AsyncStorage.setItem('twin_party_current_task', newPick);
+      setUpcomingTask(newPick);
+    } catch (e) {
+      console.warn('fail', e);
+      setUpcomingTask(newPick);
+    }
+  };
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.containerTwinPartySpirtyDinner}>
-        <View style={styles.headerRowTwinPartySpirtyDinner}>
-          <View style={styles.textBlockTwinPartySpirtyDinner}>
-            <Text style={styles.timerTextTwinPartySpirtyDinner}>
-              {isReadyTwinPartySpirtyDinner
-                ? 'Additional task ready'
-                : `${previewTaskTwinPartySpirtyDinner}`}
+      <View style={ui.deck}>
+        <View style={ui.mast}>
+          <View style={ui.copyWrap}>
+            <Text style={ui.hintText}>
+              {readyFlag ? 'Additional task ready' : `${upcomingTask}`}
             </Text>
 
-            <View style={styles.progressBarTwinPartySpirtyDinner}>
+            <View style={ui.progressTrack}>
               <View
-                style={[
-                  styles.progressFillTwinPartySpirtyDinner,
-                  { width: `${progressTwinPartySpirtyDinner * 100}%` },
-                ]}
+                style={[ui.progressFill, { width: `${progress * 100}%` }]}
               />
             </View>
           </View>
@@ -122,147 +142,95 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
           />
         </View>
 
-        {isReadyTwinPartySpirtyDinner && (
+        {readyFlag && (
           <TouchableOpacity
             activeOpacity={0.8}
-            style={styles.taskWrapperTwinPartySpirtyDinner}
-            onPress={async () => {
-              navigation.navigate('TwinPartySpirtyDinnerAddTask', {
-                task: previewTaskTwinPartySpirtyDinner,
-              });
-
-              await AsyncStorage.removeItem('twin_party_total_time');
-              setTotalSecondsTwinPartySpirtyDinner(0);
-
-              const newTaskTwinPartySpirtyDinner =
-                PARTY_MOMENT_PHOTO_CHALLENGE[
-                  Math.floor(
-                    Math.random() * PARTY_MOMENT_PHOTO_CHALLENGE.length,
-                  )
-                ];
-
-              await AsyncStorage.setItem(
-                'twin_party_current_task',
-                newTaskTwinPartySpirtyDinner,
-              );
-
-              setPreviewTaskTwinPartySpirtyDinner(newTaskTwinPartySpirtyDinner);
-            }}
+            style={ui.taskArea}
+            onPress={openTaskHandler}
           >
             <LinearGradient
               colors={['#FFF831', '#0DFF00', '#FF00C8']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.taskBtnTwinPartySpirtyDinner}
+              style={ui.taskButton}
             >
-              <Text style={styles.taskBtnTextTwinPartySpirtyDinner}>
-                Open task
-              </Text>
+              <Text style={ui.taskButtonText}>Open task</Text>
             </LinearGradient>
           </TouchableOpacity>
         )}
 
-        <Text style={styles.chooseTextTwinPartySpirtyDinner}>
-          Choose a mode:
-        </Text>
+        <Text style={ui.chooseLabel}>Choose a mode:</Text>
 
         <TouchableOpacity
-          style={[
-            styles.modeBtnTwinPartySpirtyDinner,
-            modeTwinPartySpirtyDinner === 'PARTY' &&
-              styles.modeActiveTwinPartySpirtyDinner,
-          ]}
-          onPress={() => setModeTwinPartySpirtyDinner('PARTY')}
+          style={[ui.modeRow, chosenMode === 'PARTY' && ui.modeActive]}
+          onPress={() => setChosenMode('PARTY')}
         >
           <View
-            style={[
-              styles.dotTwinPartySpirtyDinner,
-              modeTwinPartySpirtyDinner === 'PARTY' &&
-                styles.dotActiveTwinPartySpirtyDinner,
-            ]}
+            style={[ui.indicator, chosenMode === 'PARTY' && ui.indicatorActive]}
           />
           <Text
-            style={[
-              styles.modeTextTwinPartySpirtyDinner,
-              modeTwinPartySpirtyDinner === 'PARTY' &&
-                styles.modeTextActiveTwinPartySpirtyDinner,
-            ]}
+            style={[ui.modeText, chosenMode === 'PARTY' && ui.modeTextActive]}
           >
             Party Mode
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.modeBtnTwinPartySpirtyDinner,
-            modeTwinPartySpirtyDinner === 'CHILL' &&
-              styles.modeActiveTwinPartySpirtyDinner,
-          ]}
-          onPress={() => setModeTwinPartySpirtyDinner('CHILL')}
+          style={[ui.modeRow, chosenMode === 'CHILL' && ui.modeActive]}
+          onPress={() => setChosenMode('CHILL')}
         >
           <View
-            style={[
-              styles.dotTwinPartySpirtyDinner,
-              modeTwinPartySpirtyDinner === 'CHILL' &&
-                styles.dotActiveTwinPartySpirtyDinner,
-            ]}
+            style={[ui.indicator, chosenMode === 'CHILL' && ui.indicatorActive]}
           />
           <Text
-            style={[
-              styles.modeTextTwinPartySpirtyDinner,
-              modeTwinPartySpirtyDinner === 'CHILL' &&
-                styles.modeTextActiveTwinPartySpirtyDinner,
-            ]}
+            style={[ui.modeText, chosenMode === 'CHILL' && ui.modeTextActive]}
           >
             Chill Mode
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.startBtnTwinPartySpirtyDinner,
-            !modeTwinPartySpirtyDinner &&
-              styles.startDisabledTwinPartySpirtyDinner,
-          ]}
+          style={[ui.bigStart, !chosenMode && ui.disabledStart]}
           activeOpacity={0.9}
           onPress={() =>
             navigation.navigate('TwinPartySpirtyDinnerAddPlayers', {
-              mode: modeTwinPartySpirtyDinner,
+              mode: chosenMode,
             })
           }
         >
-          <Text style={styles.startTextTwinPartySpirtyDinner}>START</Text>
+          <Text style={ui.bigStartText}>START</Text>
         </TouchableOpacity>
       </View>
     </TwinPartySpirtyDinnerBackground>
   );
 };
 
-const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+// стилі
+const ui = StyleSheet.create({
+  deck: {
     flex: 1,
     paddingTop: 70,
     alignItems: 'center',
     padding: 24,
     paddingBottom: 130,
   },
-  headerRowTwinPartySpirtyDinner: {
+  mast: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
     width: '100%',
   },
-  textBlockTwinPartySpirtyDinner: {
+  copyWrap: {
     width: '70%',
     flex: 1,
+    marginRight: 18,
   },
-  timerTextTwinPartySpirtyDinner: {
+  hintText: {
     color: '#FFFFFF',
     fontSize: 13,
     marginBottom: 10,
     width: '80%',
   },
-  progressBarTwinPartySpirtyDinner: {
+  progressTrack: {
     width: '90%',
     height: 18,
     borderRadius: 6,
@@ -273,15 +241,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#31FFCF',
   },
-  progressFillTwinPartySpirtyDinner: {
+  progressFill: {
     height: '100%',
     backgroundColor: '#31FFCF',
     borderRadius: 7,
   },
-  taskWrapperTwinPartySpirtyDinner: {
+  taskArea: {
     alignSelf: 'flex-start',
   },
-  taskBtnTwinPartySpirtyDinner: {
+  taskButton: {
     width: 191,
     height: 52,
     borderRadius: 23,
@@ -289,19 +257,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 30,
   },
-  taskBtnTextTwinPartySpirtyDinner: {
+  taskButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
-  chooseTextTwinPartySpirtyDinner: {
+  chooseLabel: {
     fontSize: 20,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 20,
     marginTop: 50,
   },
-  modeBtnTwinPartySpirtyDinner: {
+  modeRow: {
     width: '65%',
     height: 80,
     borderRadius: 24,
@@ -312,10 +280,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 16,
   },
-  modeActiveTwinPartySpirtyDinner: {
+  modeActive: {
     borderColor: '#31FFCF',
   },
-  dotTwinPartySpirtyDinner: {
+  indicator: {
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -323,19 +291,19 @@ const styles = StyleSheet.create({
     marginRight: 14,
     opacity: 0.6,
   },
-  dotActiveTwinPartySpirtyDinner: {
+  indicatorActive: {
     opacity: 1,
   },
-  modeTextTwinPartySpirtyDinner: {
+  modeText: {
     fontSize: 20,
     fontWeight: '600',
     color: '#31FFCF',
     opacity: 0.6,
   },
-  modeTextActiveTwinPartySpirtyDinner: {
+  modeTextActive: {
     opacity: 1,
   },
-  startBtnTwinPartySpirtyDinner: {
+  bigStart: {
     width: '74%',
     height: 170,
     borderRadius: 23,
@@ -344,10 +312,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 30,
   },
-  startDisabledTwinPartySpirtyDinner: {
+  disabledStart: {
     opacity: 0.7,
   },
-  startTextTwinPartySpirtyDinner: {
+  bigStartText: {
     fontSize: 24,
     fontWeight: '600',
     color: '#000',

@@ -7,178 +7,174 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 
 const TwinPartySpirtyDinnerAddTask = () => {
-  const navigationTwinPartySpirtyDinner = useNavigation();
-  const routeTwinPartySpirtyDinner = useRoute();
-  const { task: taskTwinPartySpirtyDinner } = routeTwinPartySpirtyDinner.params;
-  const [photoTwinPartySpirtyDinner, setPhotoTwinPartySpirtyDinner] =
-    useState(null);
+  const nav = useNavigation();
+  const route = useRoute();
 
-  const pickPhotoTwinPartySpirtyDinner = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        quality: 0.9,
-        selectionLimit: 1,
-      },
-      responseTwinPartySpirtyDinner => {
-        if (responseTwinPartySpirtyDinner.didCancel) return;
-        if (responseTwinPartySpirtyDinner.errorCode) return;
+  const { task: incomingTask } = route.params || {};
+  const [pickedUri, setPickedUri] = useState(null);
 
-        const uriTwinPartySpirtyDinner =
-          responseTwinPartySpirtyDinner.assets?.[0]?.uri;
+  const openGallery = () => {
+    try {
+      launchImageLibrary(
+        {
+          mediaType: 'photo',
+          quality: 0.9,
+          selectionLimit: 1,
+        },
+        resp => {
+          if (!resp) return;
+          if (resp.didCancel) {
+            console.log('picker cancelled');
+            return;
+          }
+          if (resp.errorCode) {
+            console.warn('picker error', resp.errorCode, resp.errorMessage);
+            return;
+          }
 
-        if (uriTwinPartySpirtyDinner) {
-          setPhotoTwinPartySpirtyDinner(uriTwinPartySpirtyDinner);
-        }
-      },
-    );
+          const uri = resp.assets?.[0]?.uri;
+          if (uri) {
+            console.log('picker uri', uri);
+
+            setPickedUri(uri);
+          } else {
+            console.warn('picker err');
+          }
+        },
+      );
+    } catch (e) {
+      console.error('e', e);
+    }
   };
 
-  const formatDateTwinPartySpirtyDinner = () => {
-    const dateTwinPartySpirtyDinner = new Date();
-    const dayTwinPartySpirtyDinner = String(
-      dateTwinPartySpirtyDinner.getDate(),
-    ).padStart(2, '0');
-    const monthTwinPartySpirtyDinner = String(
-      dateTwinPartySpirtyDinner.getMonth() + 1,
-    ).padStart(2, '0');
-    const yearTwinPartySpirtyDinner = dateTwinPartySpirtyDinner.getFullYear();
-    return `${dayTwinPartySpirtyDinner}.${monthTwinPartySpirtyDinner}.${yearTwinPartySpirtyDinner}`;
+  const prettyDate = () => {
+    const newDay = new Date();
+    const dayDD = String(newDay.getDate()).padStart(2, '0');
+    const monthMM = String(newDay.getMonth() + 1).padStart(2, '0');
+    const yearYYYY = newDay.getFullYear();
+    return `${dayDD}.${monthMM}.${yearYYYY}`;
   };
 
-  const saveMomentTwinPartySpirtyDinner = async () => {
-    const storedTwinPartySpirtyDinner = await AsyncStorage.getItem(
-      'twin_party_moments',
-    );
-    const momentsTwinPartySpirtyDinner = storedTwinPartySpirtyDinner
-      ? JSON.parse(storedTwinPartySpirtyDinner)
-      : [];
+  const persistMoment = async () => {
+    if (!pickedUri) {
+      console.warn('no photo:(');
+      return;
+    }
 
-    const newMomentTwinPartySpirtyDinner = {
-      id: Date.now().toString(),
-      photo: photoTwinPartySpirtyDinner,
-      task: taskTwinPartySpirtyDinner,
-      date: formatDateTwinPartySpirtyDinner(),
-    };
+    try {
+      const storedMoments = await AsyncStorage.getItem('twin_party_moments');
+      const existing = storedMoments ? JSON.parse(storedMoments) : [];
 
-    await AsyncStorage.setItem(
-      'twin_party_moments',
-      JSON.stringify([
-        newMomentTwinPartySpirtyDinner,
-        ...momentsTwinPartySpirtyDinner,
-      ]),
-    );
+      const newMoment = {
+        id: Date.now().toString(),
+        photo: pickedUri,
+        task: incomingTask || '',
+        date: prettyDate(),
+      };
 
-    navigationTwinPartySpirtyDinner.goBack();
+      const next = [newMoment, ...existing];
+
+      await AsyncStorage.setItem('twin_party_moments', JSON.stringify(next));
+      console.log('saved!!!', newMoment.id);
+
+      nav.goBack();
+    } catch (e) {
+      console.error('fail!', e);
+    }
   };
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.containerTwinPartySpirtyDinner}>
-        <View style={styles.headerTwinPartySpirtyDinner}>
-          <TouchableOpacity
-            onPress={() => navigationTwinPartySpirtyDinner.goBack()}
-          >
-            <Text style={styles.backTwinPartySpirtyDinner}>←</Text>
+      <View style={sty.shell}>
+        <View style={sty.headerRow}>
+          <TouchableOpacity onPress={() => nav.goBack()}>
+            <Text style={sty.backGlyph}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitleTwinPartySpirtyDinner}>
-            Additional task
-          </Text>
+          <Text style={sty.titleText}>Additional task</Text>
         </View>
 
         <LinearGradient
           colors={['#FFF831', '#0DFF00', '#FF00C8']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.gradientWrapperTwinPartySpirtyDinner}
+          style={sty.gradientBox}
         >
-          <View style={styles.taskCardTwinPartySpirtyDinner}>
-            <Text style={styles.taskLabelTwinPartySpirtyDinner}>TASK:</Text>
-            <Text style={styles.taskTextTwinPartySpirtyDinner}>
-              {taskTwinPartySpirtyDinner}
-            </Text>
+          <View style={sty.taskWrap}>
+            <Text style={sty.taskLabel}>TASK:</Text>
+            <Text style={sty.taskBody}>{incomingTask}</Text>
           </View>
         </LinearGradient>
 
         <TouchableOpacity
-          style={styles.photoCardTwinPartySpirtyDinner}
-          activeOpacity={0.8}
-          onPress={pickPhotoTwinPartySpirtyDinner}
+          style={sty.photoArea}
+          activeOpacity={0.85}
+          onPress={openGallery}
         >
-          {photoTwinPartySpirtyDinner ? (
-            <Image
-              source={{ uri: photoTwinPartySpirtyDinner }}
-              style={styles.photoTwinPartySpirtyDinner}
-            />
+          {pickedUri ? (
+            <Image source={{ uri: pickedUri }} style={sty.photoFill} />
           ) : (
-            <>
+            <View style={sty.placeholder}>
               <Image
                 source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyAddIng.png')}
-                style={styles.addIconTwinPartySpirtyDinner}
+                style={sty.plusIcon}
               />
-              <Text style={styles.addPhotoTextTwinPartySpirtyDinner}>
-                Add photo
-              </Text>
-            </>
+              <Text style={sty.placeholderText}>Add photo</Text>
+            </View>
           )}
         </TouchableOpacity>
 
-        {photoTwinPartySpirtyDinner && (
-          <TouchableOpacity
-            style={[
-              styles.saveBtnTwinPartySpirtyDinner,
-              !photoTwinPartySpirtyDinner &&
-                styles.saveDisabledTwinPartySpirtyDinner,
-            ]}
-            disabled={!photoTwinPartySpirtyDinner}
-            onPress={saveMomentTwinPartySpirtyDinner}
-          >
-            <Text style={styles.saveTextTwinPartySpirtyDinner}>SAVE</Text>
-          </TouchableOpacity>
-        )}
+        {/* Кнопка активна тільки коли є фотка */}
+
+        <TouchableOpacity
+          style={[sty.saveButton, !pickedUri && sty.saveDisabled]}
+          disabled={!pickedUri}
+          onPress={persistMoment}
+        >
+          <Text style={sty.saveLabel}>SAVE</Text>
+        </TouchableOpacity>
       </View>
     </TwinPartySpirtyDinnerBackground>
   );
 };
 
-const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+const sty = StyleSheet.create({
+  shell: {
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
   },
-  headerTwinPartySpirtyDinner: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
     gap: 12,
   },
-  backTwinPartySpirtyDinner: {
+  backGlyph: {
     color: '#fff',
     fontSize: 26,
   },
-  headerTitleTwinPartySpirtyDinner: {
+  titleText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
-  gradientWrapperTwinPartySpirtyDinner: {
+  gradientBox: {
     borderRadius: 24,
     marginBottom: 26,
   },
-  taskCardTwinPartySpirtyDinner: {
+  taskWrap: {
     borderRadius: 24,
     paddingVertical: 26,
     paddingHorizontal: 22,
   },
-  taskLabelTwinPartySpirtyDinner: {
+  taskLabel: {
     color: '#000',
     fontSize: 20,
     fontWeight: '300',
     marginBottom: 20,
     textAlign: 'center',
   },
-  taskTextTwinPartySpirtyDinner: {
+  taskBody: {
     color: '#000',
     fontSize: 20,
     fontWeight: '600',
@@ -186,7 +182,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingHorizontal: 30,
   },
-  photoCardTwinPartySpirtyDinner: {
+  photoArea: {
     height: 180,
     borderRadius: 23,
     borderWidth: 1,
@@ -196,19 +192,22 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     overflow: 'hidden',
   },
-  photoTwinPartySpirtyDinner: {
+  photoFill: {
     width: '100%',
     height: '100%',
   },
-  addIconTwinPartySpirtyDinner: {
+  placeholder: {
+    alignItems: 'center',
+  },
+  plusIcon: {
     marginBottom: 13,
   },
-  addPhotoTextTwinPartySpirtyDinner: {
+  placeholderText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '400',
   },
-  saveBtnTwinPartySpirtyDinner: {
+  saveButton: {
     height: 80,
     width: 279,
     borderRadius: 26,
@@ -219,10 +218,10 @@ const styles = StyleSheet.create({
     marginBottom: 50,
     alignSelf: 'center',
   },
-  saveDisabledTwinPartySpirtyDinner: {
+  saveDisabled: {
     opacity: 0.5,
   },
-  saveTextTwinPartySpirtyDinner: {
+  saveLabel: {
     color: '#000',
     fontSize: 22,
     fontWeight: '700',

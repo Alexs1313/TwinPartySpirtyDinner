@@ -1,28 +1,46 @@
-import React, { useEffect } from 'react';
-import { WebView } from 'react-native-webview';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
-import { twinPartySpirtyDinnerLoaderHTML } from '../TwinPartySpirtyDinnerConsts/twinPartySpirtyDinnerLoaderHTML';
 import TwinPartySpirtyDinnerBackground from './TwinPartySpirtyDinnerBackground';
+import { twinPartySpirtyDinnerLoaderHTML } from '../TwinPartySpirtyDinnerConsts/twinPartySpirtyDinnerLoaderHTML';
 
 const TwinPartySpirtyDinnerLoader = () => {
-  const navigation = useNavigation();
+  const nav = useNavigation();
+  const timerRef = useRef(null);
 
   useEffect(() => {
-    const loaderTimer = setTimeout(() => {
-      navigation.replace('TwinPartySpirtyDinnerOnboard');
+    timerRef.current = setTimeout(() => {
+      try {
+        nav.replace('TwinPartySpirtyDinnerOnboard');
+
+        console.log('[Loader] nav!');
+      } catch (err) {
+        console.warn('replace failed', err);
+        try {
+          nav.navigate('TwinPartySpirtyDinnerOnboard');
+        } catch (err2) {
+          console.error('failed', err2);
+        }
+      }
     }, 5000);
 
-    return () => clearTimeout(loaderTimer);
-  }, [navigation]);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+        console.log('[Loader] timer cleared on unmount');
+      }
+    };
+  }, [nav]);
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.loaderContainer}>
+      <View style={sty.wrapper} accessibilityLabel="loader-screen">
         <WebView
           originWhitelist={['*']}
           source={{ html: twinPartySpirtyDinnerLoaderHTML }}
-          style={{ width: 360, height: 260, backgroundColor: 'transparent' }}
+          style={sty.webview}
           scrollEnabled={false}
         />
       </View>
@@ -30,11 +48,16 @@ const TwinPartySpirtyDinnerLoader = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  loaderContainer: {
+const sty = StyleSheet.create({
+  wrapper: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  webview: {
+    width: 360,
+    height: 260,
+    backgroundColor: 'transparent',
   },
 });
 

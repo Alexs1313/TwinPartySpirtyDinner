@@ -12,7 +12,7 @@ import WebView from 'react-native-webview';
 import { twinPartySpirtyDinnerLoaderHTML } from '../TwinPartySpirtyDinnerConsts/twinPartySpirtyDinnerLoaderHTML';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const QUESTION_PARTY_SPIRTY = [
+const QUESTIONS_PARTY = [
   'Who sets the pace of the evening today?',
   'Who is the most unpredictable right now?',
   'Who is the fastest to get into the game?',
@@ -25,7 +25,7 @@ const QUESTION_PARTY_SPIRTY = [
   'Who looks like the leader of the party today?',
 ];
 
-const QUESTION_CHILL_SPIRTY = [
+const QUESTIONS_CHILL = [
   'Who is the calmest today?',
   'Who looks the most relaxed?',
   'Who is at their own pace right now?',
@@ -36,7 +36,7 @@ const QUESTION_CHILL_SPIRTY = [
   'Who is the least stressed?',
 ];
 
-const ACTION_PARTY_SPIRTY = [
+const ACTIONS_PARTY = [
   'Show maximum joy',
   'Make a pompous pose',
   'Show surprise',
@@ -44,178 +44,261 @@ const ACTION_PARTY_SPIRTY = [
   'Make an “ok” gesture',
 ];
 
-const TwinPartySpirtyDinnerAddPlayers = ({ route, navigation }) => {
-  const modeTwinPartySpirtyDinner = route?.params?.mode || 'PARTY';
-  const [screenTwinPartySpirtyDinner, setScreenTwinPartySpirtyDinner] =
-    useState('ADD_PLAYERS');
-  const [playersTwinPartySpirtyDinner, setPlayersTwinPartySpirtyDinner] =
-    useState([]);
-  const [nameTwinPartySpirtyDinner, setNameTwinPartySpirtyDinner] =
-    useState('');
-  const [playerIdxTwinPartySpirtyDinner, setPlayerIdxTwinPartySpirtyDinner] =
-    useState(0);
-  const inputRefTwinPartySpirtyDinner = useRef(null);
-  const sessionRefTwinPartySpirtyDinner = useRef(0);
-  const [categoryTwinPartySpirtyDinner, setCategoryTwinPartySpirtyDinner] =
-    useState('QUESTION');
-  const [idxTwinPartySpirtyDinner, setIdxTwinPartySpirtyDinner] = useState(0);
-  const [
-    stepSecondsTwinPartySpirtyDinner,
-    setStepSecondsTwinPartySpirtyDinner,
-  ] = useState(15);
+const SCREEN_ADD = 'ADD_PLAYERS';
+const SCREEN_LOADER = 'LOADER';
+const SCREEN_GAME = 'GAME';
 
-  const stepTimerRefTwinPartySpirtyDinner = useRef(null);
+const CATEGORY_QUESTION = 'QUESTION';
+const CATEGORY_ACTION = 'ACTION';
+
+const STEP_DEFAULT_SECONDS = 15;
+const MAX_PLAYERS = 4;
+
+const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
+  const mode = route?.params?.mode || 'PARTY';
+  const isPartyMode = mode === 'PARTY';
+
+  // стейти ------------------>
+
+  const [screen, setScreen] = useState(SCREEN_ADD);
+  const [roster, setRoster] = useState([]);
+  const [pendingName, setPendingName] = useState('');
+  const [cursor, setCursor] = useState(0);
+  const [phase, setPhase] = useState(CATEGORY_QUESTION);
+  const [secondsLeft, setSecondsLeft] = useState(STEP_DEFAULT_SECONDS);
+
+  // рефи ------------------>
+
+  const nameInputRef = useRef(null);
+  const sessionTickerRef = useRef(null);
+  const roundTickerRef = useRef(null);
+
+  // ефекти ------------------>
 
   useEffect(() => {
-    const timerTwinPartySpirtyDinner = setInterval(async () => {
-      sessionRefTwinPartySpirtyDinner.current += 1;
-
-      const storedTwinPartySpirtyDinner = await AsyncStorage.getItem(
-        'twin_party_total_time',
-      );
-      const totalTwinPartySpirtyDinner = storedTwinPartySpirtyDinner
-        ? Number(storedTwinPartySpirtyDinner)
-        : 0;
-
-      await AsyncStorage.setItem(
-        'twin_party_total_time',
-        String(totalTwinPartySpirtyDinner + 1),
-      );
-    }, 1000);
-
-    return () => clearInterval(timerTwinPartySpirtyDinner);
+    let alive = true;
+    AsyncStorage.getItem('twin_party_players')
+      .then(stored => {
+        if (!alive) return;
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              setRoster(parsed);
+              console.log('Loaded roster!!!', parsed);
+            }
+          } catch (e) {
+            console.warn('fail', e);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('read error', err);
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const addPlayerTwinPartySpirtyDinner = () => {
-    const trimmedTwinPartySpirtyDinner = nameTwinPartySpirtyDinner.trim();
-    if (!trimmedTwinPartySpirtyDinner) return;
+  useEffect(() => {
+    const tick = async () => {
+      try {
+        const storedTime = await AsyncStorage.getItem('twin_party_total_time');
 
-    setPlayersTwinPartySpirtyDinner(players => [
-      ...players,
-      trimmedTwinPartySpirtyDinner,
-    ]);
+        const totalTime = storedTime ? Number(storedTime) : 0;
+        await AsyncStorage.setItem(
+          'twin_party_total_time',
+          String(totalTime + 1),
+        );
+      } catch (err) {
+        console.error('tick error =>', err);
+      }
+    };
 
-    setNameTwinPartySpirtyDinner('');
-    inputRefTwinPartySpirtyDinner.current?.clear();
-  };
+    sessionTickerRef.current = setInterval(tick, 1000);
 
-  const removePlayerTwinPartySpirtyDinner = indexTwinPartySpirtyDinner => {
-    setPlayersTwinPartySpirtyDinner(players =>
-      players.filter((_, idx) => idx !== indexTwinPartySpirtyDinner),
+    return () => {
+      if (sessionTickerRef.current) {
+        clearInterval(sessionTickerRef.current);
+        sessionTickerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('twin_party_players', JSON.stringify(roster)).catch(
+      err => {
+        console.warn('not save roster', err);
+      },
     );
+  }, [roster]);
 
-    if (
-      playerIdxTwinPartySpirtyDinner >= indexTwinPartySpirtyDinner &&
-      playerIdxTwinPartySpirtyDinner > 0
-    ) {
-      setPlayerIdxTwinPartySpirtyDinner(idx => idx - 1);
+  // функціЇ ------------------>
+
+  const addParticipant = () => {
+    const name = (pendingName || '').trim();
+    if (!name) return;
+
+    if (roster.length >= MAX_PLAYERS) {
+      console.log('max players reached');
+      return;
+    }
+
+    setRoster(prev => {
+      const next = [...prev, name];
+
+      return next;
+    });
+
+    setPendingName('');
+
+    try {
+      nameInputRef.current?.clear();
+    } catch (e) {
+      console.log('failed =>');
     }
   };
 
-  const startGameTwinPartySpirtyDinner = () => {
-    if (playersTwinPartySpirtyDinner.length < 2) return;
+  const removeParticipant = idx => {
+    setRoster(prev => {
+      const next = prev.filter((_, i) => i !== idx);
 
-    setPlayerIdxTwinPartySpirtyDinner(0);
-    setIdxTwinPartySpirtyDinner(0);
-    setCategoryTwinPartySpirtyDinner('QUESTION');
+      return next;
+    });
 
-    setScreenTwinPartySpirtyDinner('LOADER');
-    setTimeout(() => setScreenTwinPartySpirtyDinner('GAME'), 3000);
+    setCursor(prevCursor => {
+      if (prevCursor >= idx && prevCursor > 0) {
+        return prevCursor - 1;
+      }
+      return prevCursor;
+    });
   };
 
-  const listTwinPartySpirtyDinner =
-    categoryTwinPartySpirtyDinner === 'QUESTION'
-      ? modeTwinPartySpirtyDinner === 'PARTY'
-        ? QUESTION_PARTY_SPIRTY
-        : QUESTION_CHILL_SPIRTY
-      : ACTION_PARTY_SPIRTY;
+  const kickOff = () => {
+    if (roster.length < 2) {
+      console.log('not enough');
+      return;
+    }
+
+    setCursor(0);
+    setPhase(CATEGORY_QUESTION);
+    setSecondsLeft(STEP_DEFAULT_SECONDS);
+
+    setScreen(SCREEN_LOADER);
+
+    setTimeout(() => {
+      setScreen(SCREEN_GAME);
+    }, 3000);
+  };
+
+  const currentPool =
+    phase === CATEGORY_QUESTION
+      ? isPartyMode
+        ? QUESTIONS_PARTY
+        : QUESTIONS_CHILL
+      : ACTIONS_PARTY;
 
   useEffect(() => {
-    if (screenTwinPartySpirtyDinner !== 'GAME') return;
-    if (modeTwinPartySpirtyDinner !== 'PARTY') return;
+    if (screen !== SCREEN_GAME || !isPartyMode) return;
 
-    clearInterval(stepTimerRefTwinPartySpirtyDinner);
-    setStepSecondsTwinPartySpirtyDinner(15);
+    if (roundTickerRef.current) {
+      clearInterval(roundTickerRef.current);
+      roundTickerRef.current = null;
+    }
+    setSecondsLeft(STEP_DEFAULT_SECONDS);
 
-    stepTimerRefTwinPartySpirtyDinner.current = setInterval(() => {
-      setStepSecondsTwinPartySpirtyDinner(prevState => {
-        if (prevState <= 1) {
-          clearInterval(stepTimerRefTwinPartySpirtyDinner.current);
-          onContinueTwinPartySpirtyDinner();
-          return 15;
+    roundTickerRef.current = setInterval(() => {
+      setSecondsLeft(prevSecondsLeft => {
+        if (prevSecondsLeft <= 1) {
+          try {
+            clearInterval(roundTickerRef.current);
+            roundTickerRef.current = null;
+          } catch (e) {}
+          advanceTurn();
+          return STEP_DEFAULT_SECONDS;
         }
-        return prevState - 1;
+        return prevSecondsLeft - 1;
       });
     }, 1000);
 
-    return () => clearInterval(stepTimerRefTwinPartySpirtyDinner.current);
-  }, [
-    idxTwinPartySpirtyDinner,
-    categoryTwinPartySpirtyDinner,
-    screenTwinPartySpirtyDinner,
-    modeTwinPartySpirtyDinner,
-  ]);
+    return () => {
+      if (roundTickerRef.current) {
+        clearInterval(roundTickerRef.current);
+        roundTickerRef.current = null;
+      }
+    };
+  }, [screen, mode, cursor, phase]);
 
-  const onContinueTwinPartySpirtyDinner = () => {
-    if (modeTwinPartySpirtyDinner === 'PARTY') {
-      clearInterval(stepTimerRefTwinPartySpirtyDinner);
+  const advanceTurn = () => {
+    if (isPartyMode && roundTickerRef.current) {
+      try {
+        clearInterval(roundTickerRef.current);
+      } catch (e) {}
+      roundTickerRef.current = null;
     }
 
-    setIdxTwinPartySpirtyDinner(prev => prev + 1);
+    setCursor(prevCursor => {
+      const next = prevCursor + 1;
 
-    if (modeTwinPartySpirtyDinner === 'PARTY') {
-      setCategoryTwinPartySpirtyDinner(prev =>
-        prev === 'QUESTION' ? 'ACTION' : 'QUESTION',
+      return next;
+    });
+
+    if (isPartyMode) {
+      setPhase(prev =>
+        prev === CATEGORY_QUESTION ? CATEGORY_ACTION : CATEGORY_QUESTION,
       );
     }
   };
 
-  const currentPlayerTwinPartySpirtyDinner =
-    playersTwinPartySpirtyDinner[
-      idxTwinPartySpirtyDinner % playersTwinPartySpirtyDinner.length
-    ];
+  const currentPlayer = roster.length > 0 ? roster[cursor % roster.length] : '';
 
-  const stepProgressTwinPartySpirtyDinner =
-    modeTwinPartySpirtyDinner === 'PARTY'
-      ? (15 - stepSecondsTwinPartySpirtyDinner) / 15
+  const stepProgress =
+    isPartyMode && STEP_DEFAULT_SECONDS > 0
+      ? (STEP_DEFAULT_SECONDS - secondsLeft) / STEP_DEFAULT_SECONDS
       : 0;
 
-  if (screenTwinPartySpirtyDinner === 'ADD_PLAYERS') {
+  const currentCardText =
+    currentPool && currentPool.length
+      ? currentPool[cursor % currentPool.length]
+      : '';
+
+  // ----------------- Рендер ------------------>
+
+  if (screen === SCREEN_ADD) {
     return (
       <TwinPartySpirtyDinnerBackground>
-        <View style={styles.containerTwinPartySpirtyDinner}>
-          <View style={styles.headerTwinPartySpirtyDinner}>
+        <View style={styles.shell}>
+          <View style={styles.masthead}>
             <TouchableOpacity
-              activeOpacity={0.6}
-              onPress={() => navigation.goBack()}
+              activeOpacity={0.7}
+              onPress={() => {
+                navigation.goBack();
+                setRoster([]);
+              }}
             >
               <Image
                 source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyBack.png')}
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitleTwinPartySpirtyDinner}>
-              {modeTwinPartySpirtyDinner === 'PARTY'
-                ? 'Party mode'
-                : 'Chill mode'}
+
+            <Text style={styles.heading}>
+              {isPartyMode ? 'Party mode' : 'Chill mode'}
             </Text>
           </View>
 
-          <View style={styles.playersCardTwinPartySpirtyDinner}>
-            <Text style={styles.playersTitleTwinPartySpirtyDinner}>
-              Players:
-            </Text>
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>Players:</Text>
 
-            {playersTwinPartySpirtyDinner.map((player, index) => (
-              <View key={index} style={styles.playerRowTwinPartySpirtyDinner}>
-                <View style={styles.playerInputTwinPartySpirtyDinner}>
-                  <Text style={styles.playerTextTwinPartySpirtyDinner}>
-                    {player}
-                  </Text>
+            {roster.map((p, i) => (
+              <View key={`${p}-${i}`} style={styles.lineItem}>
+                <View style={styles.nameHolder}>
+                  <Text style={styles.nameDisplay}>{p}</Text>
                 </View>
+
                 <TouchableOpacity
-                  activeOpacity={0.6}
-                  style={styles.iconBtnTwinPartySpirtyDinner}
-                  onPress={() => removePlayerTwinPartySpirtyDinner(index)}
+                  activeOpacity={0.7}
+                  style={styles.minusBtn}
+                  onPress={() => removeParticipant(i)}
                 >
                   <Image
                     source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyMinus.png')}
@@ -224,19 +307,23 @@ const TwinPartySpirtyDinnerAddPlayers = ({ route, navigation }) => {
               </View>
             ))}
 
-            <View style={styles.playerRowTwinPartySpirtyDinner}>
+            <View style={styles.lineItem}>
               <TextInput
-                value={nameTwinPartySpirtyDinner}
-                ref={inputRefTwinPartySpirtyDinner}
-                onChangeText={setNameTwinPartySpirtyDinner}
+                value={pendingName}
+                ref={nameInputRef}
+                onChangeText={setPendingName}
                 placeholder="Player name"
                 placeholderTextColor="#6F5FA1"
-                style={styles.playerInputTwinPartySpirtyDinner}
+                style={styles.entryField}
               />
               <TouchableOpacity
-                activeOpacity={0.6}
-                style={styles.iconBtnTwinPartySpirtyDinner}
-                onPress={addPlayerTwinPartySpirtyDinner}
+                activeOpacity={0.7}
+                style={[
+                  styles.plusBtn,
+                  roster.length >= MAX_PLAYERS && styles.plusBtnDisabled,
+                ]}
+                onPress={addParticipant}
+                disabled={roster.length >= MAX_PLAYERS}
               >
                 <Image
                   source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyPlus.png')}
@@ -245,14 +332,14 @@ const TwinPartySpirtyDinnerAddPlayers = ({ route, navigation }) => {
             </View>
           </View>
 
-          {playersTwinPartySpirtyDinner.length >= 2 && (
-            <View style={styles.startWrapperTwinPartySpirtyDinner}>
+          {roster.length >= 2 && (
+            <View style={styles.kickoffWrap}>
               <TouchableOpacity
-                activeOpacity={0.6}
-                style={styles.startBtnTwinPartySpirtyDinner}
-                onPress={startGameTwinPartySpirtyDinner}
+                style={styles.igniteBtn}
+                activeOpacity={0.8}
+                onPress={kickOff}
               >
-                <Text style={styles.startTextTwinPartySpirtyDinner}>START</Text>
+                <Text style={styles.igniteText}>START</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -261,14 +348,14 @@ const TwinPartySpirtyDinnerAddPlayers = ({ route, navigation }) => {
     );
   }
 
-  if (screenTwinPartySpirtyDinner === 'LOADER') {
+  if (screen === SCREEN_LOADER) {
     return (
       <TwinPartySpirtyDinnerBackground>
-        <View style={styles.loaderContainerTwinPartySpirtyDinner}>
+        <View style={styles.spinWrap}>
           <WebView
             originWhitelist={['*']}
             source={{ html: twinPartySpirtyDinnerLoaderHTML }}
-            style={styles.loaderWebViewTwinPartySpirtyDinner}
+            style={styles.frame}
             scrollEnabled={false}
           />
         </View>
@@ -278,109 +365,106 @@ const TwinPartySpirtyDinnerAddPlayers = ({ route, navigation }) => {
 
   return (
     <TwinPartySpirtyDinnerBackground>
-      <View style={styles.containerTwinPartySpirtyDinner}>
-        <View style={styles.categoryCardTwinPartySpirtyDinner}>
-          <Text style={styles.categoryTitleTwinPartySpirtyDinner}>
-            Category:
-          </Text>
-          <Text style={styles.categoryTextTwinPartySpirtyDinner}>
-            {categoryTwinPartySpirtyDinner}
-          </Text>
+      <View style={styles.shell}>
+        <View style={styles.metaBox}>
+          <Text style={styles.metaLabel}>Category:</Text>
+          <Text style={styles.metaValue}>{phase}</Text>
         </View>
 
-        <View style={styles.playerBadgeTwinPartySpirtyDinner}>
-          <Text style={styles.playerNameTwinPartySpirtyDinner}>
-            {currentPlayerTwinPartySpirtyDinner}
-          </Text>
+        <View style={styles.badgeWrap}>
+          <Text style={styles.badgeText}>{currentPlayer}</Text>
         </View>
 
-        {modeTwinPartySpirtyDinner === 'PARTY' && (
-          <View style={styles.progressBarTwinPartySpirtyDinner}>
+        {isPartyMode && (
+          <View style={styles.timeTrack}>
             <View
               style={[
-                styles.progressFillTwinPartySpirtyDinner,
-                { width: `${stepProgressTwinPartySpirtyDinner * 100}%` },
+                styles.timeFill,
+                { width: `${Math.max(0, Math.min(1, stepProgress)) * 100}%` },
               ]}
             />
           </View>
         )}
 
-        <View style={styles.cardTwinPartySpirtyDinner}>
-          <Text style={styles.cardTextTwinPartySpirtyDinner}>
-            {
-              listTwinPartySpirtyDinner[
-                idxTwinPartySpirtyDinner % listTwinPartySpirtyDinner.length
-              ]
-            }
-          </Text>
+        <View style={styles.panel}>
+          <Text style={styles.panelText}>{currentCardText}</Text>
         </View>
 
         <TouchableOpacity
-          activeOpacity={0.6}
-          style={styles.continueBtnTwinPartySpirtyDinner}
-          onPress={onContinueTwinPartySpirtyDinner}
+          style={styles.nextBtn}
+          activeOpacity={0.8}
+          onPress={advanceTurn}
         >
-          <Text style={styles.continueTextTwinPartySpirtyDinner}>Continue</Text>
+          <Text style={styles.nextText}>Continue</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          activeOpacity={0.6}
-          style={styles.homeBtnTwinPartySpirtyDinner}
-          onPress={() => navigation.goBack()}
+          style={styles.exitBtn}
+          activeOpacity={0.8}
+          onPress={() => {
+            if (roundTickerRef.current) {
+              clearInterval(roundTickerRef.current);
+              roundTickerRef.current = null;
+            }
+            navigation.goBack();
+            setRoster([]);
+          }}
         >
-          <Text style={styles.homeTextTwinPartySpirtyDinner}>HOME</Text>
+          <Text style={styles.exitText}>HOME</Text>
         </TouchableOpacity>
       </View>
     </TwinPartySpirtyDinnerBackground>
   );
 };
 
-export default TwinPartySpirtyDinnerAddPlayers;
+export default TwinPartySpirtyDinnerLineup;
+
+// ----------------- Стилі ------------------>
 
 const styles = StyleSheet.create({
-  containerTwinPartySpirtyDinner: {
+  shell: {
     flex: 1,
     paddingTop: 90,
     paddingHorizontal: 20,
   },
-  headerTwinPartySpirtyDinner: {
+  masthead: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    gap: 12,
   },
-  headerTitleTwinPartySpirtyDinner: {
+  heading: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
+    marginLeft: 12,
   },
-  loaderContainerTwinPartySpirtyDinner: {
+  spinWrap: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loaderWebViewTwinPartySpirtyDinner: {
+  frame: {
     width: 360,
     height: 260,
     backgroundColor: 'transparent',
   },
-  playersCardTwinPartySpirtyDinner: {
+  panel: {
     backgroundColor: '#23113C',
     borderRadius: 24,
     padding: 20,
   },
-  playersTitleTwinPartySpirtyDinner: {
+  panelTitle: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 16,
   },
-  playerRowTwinPartySpirtyDinner: {
+  lineItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14,
   },
-  playerInputTwinPartySpirtyDinner: {
+  entryField: {
     flex: 1,
     height: 61,
     borderRadius: 23,
@@ -390,14 +474,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     color: '#fff',
     fontSize: 16,
-    fontWeight: '400',
   },
-  playerTextTwinPartySpirtyDinner: {
+  nameHolder: {
+    flex: 1,
+    height: 61,
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+  },
+  nameDisplay: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '400',
   },
-  iconBtnTwinPartySpirtyDinner: {
+  minusBtn: {
     width: 61,
     height: 61,
     borderRadius: 23,
@@ -406,17 +495,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 12,
   },
-  iconTextTwinPartySpirtyDinner: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#000',
+  plusBtn: {
+    width: 61,
+    height: 61,
+    borderRadius: 23,
+    backgroundColor: '#31FFCF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
   },
-  startWrapperTwinPartySpirtyDinner: {
+  plusBtnDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#31FFCF',
+  },
+  hintText: {
+    color: '#fff',
+    fontSize: 12,
+    marginTop: 8,
+    opacity: 0.8,
+  },
+  kickoffWrap: {
     flex: 1,
     justifyContent: 'flex-end',
     marginBottom: 70,
   },
-  startBtnTwinPartySpirtyDinner: {
+  igniteBtn: {
     height: 79,
     borderRadius: 26,
     backgroundColor: '#31FFCF',
@@ -426,12 +529,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
   },
-  startTextTwinPartySpirtyDinner: {
+  igniteText: {
     fontSize: 24,
     fontWeight: '800',
     color: '#000',
   },
-  categoryCardTwinPartySpirtyDinner: {
+  metaBox: {
     backgroundColor: '#23113C',
     borderRadius: 23,
     paddingHorizontal: 12,
@@ -442,21 +545,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
   },
-  categoryTextTwinPartySpirtyDinner: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  categoryTitleTwinPartySpirtyDinner: {
+  metaLabel: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '400',
-    textAlign: 'center',
+    marginRight: 10,
   },
-  playerBadgeTwinPartySpirtyDinner: {
+  metaValue: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  badgeWrap: {
     borderWidth: 1,
     borderColor: '#31FFCF',
     borderRadius: 22,
@@ -465,12 +566,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
-  playerNameTwinPartySpirtyDinner: {
+  badgeText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  progressBarTwinPartySpirtyDinner: {
+  timeTrack: {
     width: '100%',
     height: 10,
     borderRadius: 6,
@@ -481,25 +582,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#31FFCF',
   },
-  progressFillTwinPartySpirtyDinner: {
+  timeFill: {
     height: '100%',
     backgroundColor: '#31FFCF',
   },
-  cardTwinPartySpirtyDinner: {
-    backgroundColor: '#23113C',
-    borderRadius: 23,
-    padding: 30,
-    marginBottom: 80,
-    marginTop: 20,
-  },
-  cardTextTwinPartySpirtyDinner: {
+  panelText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
     lineHeight: 24,
+    marginBottom: 20,
   },
-  continueBtnTwinPartySpirtyDinner: {
+  nextBtn: {
     height: 79,
     width: 280,
     borderRadius: 23,
@@ -508,13 +603,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     alignSelf: 'center',
+    marginTop: 20,
   },
-  continueTextTwinPartySpirtyDinner: {
+  nextText: {
     color: '#000',
     fontSize: 24,
     fontWeight: '600',
   },
-  homeBtnTwinPartySpirtyDinner: {
+  exitBtn: {
     height: 79,
     width: 188,
     borderRadius: 23,
@@ -525,7 +621,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-  homeTextTwinPartySpirtyDinner: {
+  exitText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
