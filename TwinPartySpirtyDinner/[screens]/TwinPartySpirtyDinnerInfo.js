@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Share,
   Linking,
+  Platform,
 } from 'react-native';
 import Background from '../[components]/Background';
 
@@ -45,12 +46,20 @@ const TwinPartySpirtyDinnerInfo = () => {
       <View style={sty.shell}>
         <Text style={sty.heading}>INFORMATION</Text>
 
-        <Image
-          source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyLogo.png')}
-          style={sty.logoImg}
-          accessible
-          accessibilityLabel="Twin Party Logo"
-        />
+        {Platform.OS === 'ios' ? (
+          <Image
+            source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyLogo.png')}
+            accessible
+            accessibilityLabel="Twin Party Logo"
+          />
+        ) : (
+          <Image
+            source={require('../../assets/twinPartySpirtyDinnerImages/icon.png')}
+            style={sty.logoImg}
+            accessible
+            accessibilityLabel="Twin Party Logo"
+          />
+        )}
 
         <View style={sty.infoCard}>
           <Text style={sty.bodyText}>
@@ -77,14 +86,16 @@ const TwinPartySpirtyDinnerInfo = () => {
             <Text style={sty.actionText}>SHARE</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={sty.actionBtn}
-            onPress={openStorePage}
-            accessibilityLabel="Rate Twin Party"
-          >
-            <Text style={sty.actionText}>RATE APP</Text>
-          </TouchableOpacity>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={sty.actionBtn}
+              onPress={openStorePage}
+              accessibilityLabel="Rate Twin Party"
+            >
+              <Text style={sty.actionText}>RATE APP</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Background>
@@ -107,6 +118,9 @@ const sty = StyleSheet.create({
   },
   logoImg: {
     marginBottom: 13,
+    width: 120,
+    height: 120,
+    borderRadius: 30,
   },
   infoCard: {
     width: '86%',
@@ -137,7 +151,7 @@ const sty = StyleSheet.create({
     marginRight: 20,
   },
   actionText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#000',
   },

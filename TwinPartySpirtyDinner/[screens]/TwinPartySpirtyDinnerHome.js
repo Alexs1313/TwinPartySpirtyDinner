@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { PARTY_MOMENT_PHOTO_CHALLENGE } from '../[data]/twinPartySpirtyPhotoChalllenge';
@@ -137,9 +144,16 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
             </View>
           </View>
 
-          <Image
-            source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyHomeLogo.png')}
-          />
+          {Platform.OS === 'ios' ? (
+            <Image
+              source={require('../../assets/twinPartySpirtyDinnerImages/twinPartyHomeLogo.png')}
+            />
+          ) : (
+            <Image
+              source={require('../../assets/twinPartySpirtyDinnerImages/icon.png')}
+              style={{ width: 64, height: 64, borderRadius: 14 }}
+            />
+          )}
         </View>
 
         {readyFlag && (
@@ -159,36 +173,55 @@ const TwinPartySpirtyDinnerHome = ({ navigation }) => {
           </TouchableOpacity>
         )}
 
-        <Text style={ui.chooseLabel}>Choose a mode:</Text>
-
-        <TouchableOpacity
-          style={[ui.modeRow, chosenMode === 'PARTY' && ui.modeActive]}
-          onPress={() => setChosenMode('PARTY')}
-        >
-          <View
-            style={[ui.indicator, chosenMode === 'PARTY' && ui.indicatorActive]}
-          />
-          <Text
-            style={[ui.modeText, chosenMode === 'PARTY' && ui.modeTextActive]}
+        <View>
+          <Text style={ui.chooseLabel}>Choose a mode:</Text>
+          {Platform.OS === 'android' && (
+            <Image
+              source={require('../../assets/twinPartySpirtyDinnerImages/grapes.png')}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 80,
+                width: 380,
+                height: 280,
+                zIndex: -1,
+              }}
+            />
+          )}
+          <TouchableOpacity
+            style={[ui.modeRow, chosenMode === 'PARTY' && ui.modeActive]}
+            onPress={() => setChosenMode('PARTY')}
           >
-            Party Mode
-          </Text>
-        </TouchableOpacity>
+            <View
+              style={[
+                ui.indicator,
+                chosenMode === 'PARTY' && ui.indicatorActive,
+              ]}
+            />
+            <Text
+              style={[ui.modeText, chosenMode === 'PARTY' && ui.modeTextActive]}
+            >
+              Party Mode
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[ui.modeRow, chosenMode === 'CHILL' && ui.modeActive]}
-          onPress={() => setChosenMode('CHILL')}
-        >
-          <View
-            style={[ui.indicator, chosenMode === 'CHILL' && ui.indicatorActive]}
-          />
-          <Text
-            style={[ui.modeText, chosenMode === 'CHILL' && ui.modeTextActive]}
+          <TouchableOpacity
+            style={[ui.modeRow, chosenMode === 'CHILL' && ui.modeActive]}
+            onPress={() => setChosenMode('CHILL')}
           >
-            Chill Mode
-          </Text>
-        </TouchableOpacity>
-
+            <View
+              style={[
+                ui.indicator,
+                chosenMode === 'CHILL' && ui.indicatorActive,
+              ]}
+            />
+            <Text
+              style={[ui.modeText, chosenMode === 'CHILL' && ui.modeTextActive]}
+            >
+              Chill Mode
+            </Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           style={[ui.bigStart, !chosenMode && ui.disabledStart]}
           activeOpacity={0.9}

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  Platform,
 } from 'react-native';
 import WebView from 'react-native-webview';
 import { twinPartySpirtyDinnerLoaderHTML } from '../[constants]/twinPartySpirtyDinnerLoaderHTML';
@@ -340,6 +341,20 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
             </View>
           )}
         </View>
+
+        {Platform.OS === 'android' && (
+          <Image
+            source={require('../../assets/twinPartySpirtyDinnerImages/watmel.png')}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: -100,
+              width: 380,
+              height: 380,
+              zIndex: -1,
+            }}
+          />
+        )}
       </Background>
     );
   }
@@ -409,6 +424,21 @@ const TwinPartySpirtyDinnerLineup = ({ route, navigation }) => {
           <Text style={styles.exitText}>HOME</Text>
         </TouchableOpacity>
       </View>
+
+      {Platform.OS === 'android' && (
+        <Image
+          source={require('../../assets/twinPartySpirtyDinnerImages/grapes.png')}
+          resizeMode="contain"
+          style={{
+            position: 'absolute',
+            bottom: -20,
+            right: -80,
+            width: 300,
+            height: 230,
+            zIndex: -1,
+          }}
+        />
+      )}
     </Background>
   );
 };
@@ -542,13 +572,13 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '400',
     marginRight: 10,
   },
   metaValue: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
   },
   badgeWrap: {

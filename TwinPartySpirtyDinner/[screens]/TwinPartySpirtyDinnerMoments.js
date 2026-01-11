@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,16 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  Share,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useStore } from '../[store]/twinPartySpirtyDinnerContext';
 import Background from '../[components]/Background';
+import RNFS from 'react-native-fs';
+import Share from 'react-native-share';
+import { captureRef } from 'react-native-view-shot';
 
 const TwinPartySpirtyDinnerMoments = () => {
   const {
@@ -20,6 +23,7 @@ const TwinPartySpirtyDinnerMoments = () => {
     setMomentsTwinPartySpirtyDinner: setScrapbook,
     loadMomentsTwinPartySpirtyDinner: loadScrapbook,
   } = useStore();
+  const imageRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,29 +68,54 @@ const TwinPartySpirtyDinnerMoments = () => {
     }
   };
 
-  const shareMoment = async item => {
+  // const shareMoment = async item => {
+  //   try {
+  //     const message = item?.task || 'Twin Party moment';
+  //     const url = item?.photo;
+
+  //     console.log('sharing ok', item?.id);
+
+  //     await Share.share(
+  //       {
+  //         message,
+  //         url,
+  //       },
+  //       {},
+  //     );
+  //     console.log('[Moments] share finished', item?.id);
+  //   } catch (e) {
+  //     console.warn('[Moments] share failed', e);
+  //   }
+  // };
+
+  const shareMoment = async () => {
     try {
-      const message = item?.task || 'Twin Party moment';
-      const url = item?.photo;
+      const tmpUri = await captureRef(imageRef, {
+        format: 'png',
+        quality: 1,
+        result: 'tmpfile',
+      });
 
-      console.log('sharing ok', item?.id);
+      let fileUri = tmpUri.startsWith('file://') ? tmpUri : 'file://' + tmpUri;
+      const pathToCheck = fileUri.replace('file://', '');
+      const exists = await RNFS.exists(pathToCheck);
+      if (!exists) return;
 
-      await Share.share(
-        {
-          message,
-          url,
-        },
-        {},
-      );
-      console.log('[Moments] share finished', item?.id);
-    } catch (e) {
-      console.warn('[Moments] share failed', e);
+      await Share.open({
+        url: fileUri,
+        type: 'image/png',
+        failOnCancel: false,
+      });
+    } catch (error) {
+      if (!error?.message?.includes('User did not share')) {
+        console.error('shareWallpaper error', error);
+      }
     }
   };
 
   const savedCard = ({ item }) => (
     <View style={sty.card}>
-      <Image source={{ uri: item.photo }} style={sty.photo} />
+      <Image source={{ uri: item.photo }} style={sty.photo} ref={imageRef} />
 
       <Text style={sty.date}>{item.date}</Text>
 
@@ -136,6 +165,20 @@ const TwinPartySpirtyDinnerMoments = () => {
           />
         )}
       </View>
+
+      {Platform.OS === 'android' && (
+        <Image
+          source={require('../../assets/twinPartySpirtyDinnerImages/grapes.png')}
+          style={{
+            position: 'absolute',
+            bottom: 50,
+            right: -50,
+            width: 220,
+            height: 220,
+            zIndex: -1,
+          }}
+        />
+      )}
     </Background>
   );
 };
